@@ -2,7 +2,7 @@
   "LOGGING": 1,
   "OWNER_ID": 727012870683885578,
 
-  "WEBHOOK_URL": "",
+  "WEBHOOK_URL": "https://discord.com/api/webhooks/1326570573383602246/wUzrKVVoa93BZsh6r78i_B2DMjYk_YBViv4IQd64GfTUNC17REkrAbIptKcZgZFMoSwu",
   "LANGUAGES": ["english"],
 
   "BLACKLISTED_POKEMONS": [],
