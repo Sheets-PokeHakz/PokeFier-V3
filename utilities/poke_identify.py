@@ -1,10 +1,17 @@
 import re
+import json
+import random
 import aiohttp
 import unicodedata
 import tensorflow as tf
 
 with open("data/pokemon", "r", encoding="utf8") as file:
     pokemon_list = file.read()
+
+
+def load_pokemon_data():
+    with open("data\pokemon_data.json", "r", encoding="utf-8") as f:
+        return json.load(f)
 
 
 def solve(message):
@@ -25,6 +32,7 @@ def remove_diacritics(input_str):
 
 class pokefier:
     def __init__(self):
+        self.pokemon_data = load_pokemon_data()
         self.labels = eval(open("data/names.txt", "r").read())
         self.interpreter_pool = [self._initialize_interpreter() for _ in range(5)]
 
@@ -96,3 +104,21 @@ class pokefier:
 
         # Return Predictions ( Top 3 )
         return predictions[:3]
+
+    async def get_alternate_pokemon_name(self, name, languages):
+        pokemon = load_pokemon_data()
+        pokemon = next(
+            (p for p in self.pokemon_data if p["name"].lower() == name.lower()), None
+        )
+
+        if pokemon:
+            alternate_names = [
+                alt_name
+                for alt_name in pokemon.get("altnames", [])
+                if alt_name.get("language").lower() in languages
+            ]
+
+            if alternate_names:
+                return random.choice(alternate_names)["name"].lower()
+
+        return name.lower()

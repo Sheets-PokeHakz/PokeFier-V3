@@ -1,4 +1,3 @@
-import os
 import json
 import time
 
@@ -54,7 +53,7 @@ config = read_config()
 logger.info("Initialized Config")
 
 # Defining The Bot Token
-TOKENS = os.getenv("TOKENS")
+TOKENS = ["LIST OF TOKENS"]
 
 # Defining The Config Variables
 DELAY = config["DELAY"]
@@ -97,23 +96,6 @@ class Autocatcher(commands.Bot):
 
         self.whitelisted_channels = WHITELISTED_CHANNELS
         self.blacklisted_pokemons = BLACKLISTED_POKEMONS
-
-    async def get_alternate_pokemon_name(self, name, languages=LANGUAGES):
-        pokemon = next(
-            (p for p in self.pokemon_data if p["name"].lower() == name.lower()), None
-        )
-
-        if pokemon:
-            alternate_names = [
-                alt_name
-                for alt_name in pokemon.get("altnames", [])
-                if alt_name.get("language").lower() in languages
-            ]
-
-            if alternate_names:
-                return random.choice(alternate_names)["name"].lower()
-
-        return name.lower()
 
 
 # ========================================== MAIN FUNCTIONS ========================================== #
