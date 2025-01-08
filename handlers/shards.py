@@ -1,6 +1,6 @@
 import time
 import random
-from Main import logger, DELAY
+from main import logger, DELAY
 from discord.ext import commands
 
 

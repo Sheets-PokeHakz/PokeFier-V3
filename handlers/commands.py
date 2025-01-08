@@ -1,5 +1,5 @@
 from discord.ext import commands
-from Main import OWNER_ID, POKETWO_ID
+from main import OWNER_ID, POKETWO_ID
 
 
 class CommandsHandler(commands.Cog):
