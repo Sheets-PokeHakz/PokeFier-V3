@@ -1,27 +1,33 @@
+import time
+import random
 from discord.ext import commands
-from Main import logger, POKETWO_ID
 from utilities.poke_identify import pokefier, solve, remove_diacritics
+from main import logger, POKETWO_ID, WHITELISTED_CHANNELS, LANGUAGES, DELAY
 
 
 class CatcherHandler(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+        self.pokefier = pokefier()
 
     @commands.Cog.listener()
     async def on_message(self, message):
         if message.embeds:
             if (
-                "wild" in message.embeds[0].title.lower()
+                message.author.id == POKETWO_ID
+                and len(message.embeds) > 0
+                and message.channel.id in WHITELISTED_CHANNELS
+                and "wild pokémon has appeared".lower()
+                in message.embeds[0].title.lower()
                 and self.bot.verified
-                and message.author.id == POKETWO_ID
             ):  # Checking If Pokémon Spawned And Bot Is Verified
                 logger.info("A Pokémon Spawned - Attemping To Predict")
 
                 pokemon_image = message.embeds[
                     0
                 ].image.url  # Get The Image URL Of The Pokémon
-                predicted_pokemons = await pokefier.predict_pokemon_from_url(
-                    pokemon_image
+                predicted_pokemons = await self.pokefier.predict_pokemon_from_url(
+                    image_url=pokemon_image
                 )  # Predict The Pokémon Using Pokefier
 
                 predicted_pokemon = max(
@@ -43,16 +49,20 @@ class CatcherHandler(commands.Cog):
                     return
 
                 if score > 30.0:  # 30 Is The Threshold Score
-                    alt_name = await self.bot.get_alternate_pokemon_name(
-                        name, languages=self.bot.languages
+                    alt_name = await self.pokefier.get_alternate_pokemon_name(
+                        name, languages=LANGUAGES
                     )
                     alt_name = remove_diacritics(alt_name)
 
+                    time.sleep(random.choice(DELAY))
                     await message.channel.send(f"<@716390085896962058> c {alt_name}")
                     logger.info(f"Predicted Pokémon : {name} With Score : {score}")
 
                 else:
                     logger.info(f"Predicted Pokémon : {name} With Score : {score}")
+
+                    time.sleep(random.choice(DELAY))
+                    await message.channel.send("<@716390085896962058> h")
 
         if "that is the wrong pokémon" in message.content.lower() and self.bot.verified:
             # Stop Spamming
@@ -65,7 +75,7 @@ class CatcherHandler(commands.Cog):
         if "the pokémon is" in message.content.lower() and self.bot.verified:
             logger.info("Solving The Hint")
             await message.channel.send(
-                "<@716390085896962058> c {}".format(solve(message.content))
+                "<@716390085896962058> c {}".format(solve(message.content)[0])
             )
 
             logger.info("Hint Solved")
