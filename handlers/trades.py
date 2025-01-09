@@ -8,6 +8,11 @@ class TradesHandler(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
+    @commands.command()
+    async def trade(self, ctx, user: str):
+        await ctx.send(f"<@{POKETWO_ID}> trade {user}")
+        logger.info(f"Trade Request Sent To {user}")
+
     @commands.Cog.listener()
     async def on_message(self, message):
         if (
@@ -26,7 +31,7 @@ class TradesHandler(commands.Cog):
                 if (
                     message.components[0].children[0].label.lower() == "accept"
                 ):  # Checking If Accept Button Is Present
-                    await time.sleep(
+                    time.sleep(
                         random.choice(DELAY)
                     )  # Delay Before Accepting Trade For Human Replication
                     await (
@@ -47,7 +52,7 @@ class TradesHandler(commands.Cog):
                     if (
                         message.components[0].children[0].label.lower() == "confirm"
                     ):  # Checking If Confirm Button Is Present
-                        await time.sleep(
+                        time.sleep(
                             random.choice(DELAY)
                         )  # Delay Before Confirming Trade For Human Replication
                         await (
