@@ -1,12 +1,22 @@
 import time
 import random
-from main import logger, DELAY
 from discord.ext import commands
+from main import logger, DELAY, POKETWO_ID, OWNER_ID
 
 
 class ShardsHandler(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+
+    @commands.command()
+    async def shard(self, ctx, amt: int):
+        if ctx.author.id == OWNER_ID:
+            if amt > 0:
+                await ctx.send(f"<@{POKETWO_ID}> buy shards {amt}")
+        else:
+            await ctx.send(
+                f"Invalid Usage. Correct Usage : `{self.bot.command_prefix}shardbuy <amount>`"
+            )
 
     @commands.Cog.listener()
     async def on_message(self, message):
@@ -18,7 +28,7 @@ class ShardsHandler(commands.Cog):
             if (
                 message.components[0].children[0].label.lower() == "confirm"
             ):  # Checking If Confirm Button Is Present
-                await time.sleep(
+                time.sleep(
                     random.choice(DELAY)
                 )  # Delay Before Confirming Trade For Human Replication
                 await (
