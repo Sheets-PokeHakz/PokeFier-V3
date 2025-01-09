@@ -1,7 +1,6 @@
 import json
 import time
 
-import random
 import asyncio
 import logging
 
@@ -53,7 +52,7 @@ config = read_config()
 logger.info("Initialized Config")
 
 # Defining The Bot Token
-TOKENS = ["LIST OF TOKENS"]
+TOKENS = ["List OF Tokens"]
 
 # Defining The Config Variables
 DELAY = config["DELAY"]
@@ -70,18 +69,6 @@ WEBHOOK_URL = config["WEBHOOK_URL"]
 
 BLACKLISTED_POKEMONS = config["BLACKLISTED_POKEMONS"]
 WHITELISTED_CHANNELS = config["WHITELISTED_CHANNELS"]
-
-# ========================================== SPAM ========================================== #
-
-
-def spam():
-    with open("Messages/Messages.txt", "r", encoding="utf-8", errors="ignore") as file:
-        messages = file.readlines()
-
-    spam_message = random.choice(messages).strip()
-
-    return spam_message
-
 
 # ========================================== AUTOCATCHER CLASS ========================================== #
 
@@ -103,6 +90,8 @@ class Autocatcher(commands.Bot):
 
 async def run_autocatcher(token):
     bot = Autocatcher()  # Initialize Bot
+
+    bot.remove_command("help")  # Remove Default Help Command
 
     @bot.event
     async def on_ready():
