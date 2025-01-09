@@ -49,6 +49,13 @@ class MisceleneousHandler(commands.Cog):
         self.bot = bot
         self.pokemons_caught = 0
 
+    @commands.command()
+    async def solved(self, ctx):
+        self.bot.verified = True
+        await ctx.send("Thanks Dude! I Will Continue The Grind")
+
+        logger.info("Captcha Solved - Self Bot Booted")
+
     @commands.Cog.listener()
     async def on_message(self, message):
         if "congratulations" in message.content.lower() and self.bot.verified:
@@ -73,7 +80,7 @@ class MisceleneousHandler(commands.Cog):
             embed1.set_timestamp()
 
             if pokemon_url:
-                embed1.set_image(url=pokemon_url)
+                embed1.set_thumbnail(url=pokemon_url)
 
             await send_log(embed=embed1, WEBHOOK_URL=WEBHOOK_URL)
 
@@ -88,7 +95,7 @@ class MisceleneousHandler(commands.Cog):
             await message.channel.send("<@716390085896962058> incense pause")
             logger.info("Incense Paused")
 
-            owner_dm = await self.bot.fetch_user(OWNER_ID)
+            owner_dm = self.bot.get_user(OWNER_ID)
             await owner_dm.send(
                 f"Captcha Challenge Received. Please Solve It.\n\n{message.content}"
             )
