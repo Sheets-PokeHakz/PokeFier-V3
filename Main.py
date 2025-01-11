@@ -129,6 +129,12 @@ async def run_autocatcher(token):
     await bot.start(token)
 
 
+async def stop_autocatcher():
+    for task in asyncio.all_tasks():
+        task.cancel()
+        await task
+
+
 async def main(tokens):
     ac_tasks = [run_autocatcher(token) for token in tokens]
     await asyncio.gather(*ac_tasks)
