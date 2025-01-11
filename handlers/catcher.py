@@ -64,15 +64,21 @@ class CatcherHandler(commands.Cog):
                     time.sleep(random.choice(DELAY))
                     await message.channel.send("<@716390085896962058> h")
 
-        if "that is the wrong pokémon" in message.content.lower() and self.bot.verified:
-            # Stop Spamming
-
+        if (
+            "that is the wrong pokémon" in message.content.lower()
+            and self.bot.verified
+            and message.channel.id in WHITELISTED_CHANNELS
+        ):
             logger.info("Wrong Pokémon Detected")
             await message.channel.send("<@716390085896962058> h")
 
             logger.info("Requested Hint For Wrong Pokémon")
 
-        if "the pokémon is" in message.content.lower() and self.bot.verified:
+        if (
+            "the pokémon is" in message.content.lower()
+            and self.bot.verified
+            and message.channel.id in WHITELISTED_CHANNELS
+        ):
             logger.info("Solving The Hint")
             await message.channel.send(
                 "<@716390085896962058> c {}".format(solve(message.content)[0])
