@@ -1,7 +1,9 @@
-import time
 import random
+import time
+
 from discord.ext import commands
-from main import logger, DELAY, POKETWO_ID
+
+from main import DELAY, POKETWO_ID, logger
 
 
 class TradesHandler(commands.Cog):

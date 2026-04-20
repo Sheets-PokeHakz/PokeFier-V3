@@ -1,7 +1,9 @@
-import time
 import random
+import time
+
 from discord.ext import commands
-from main import logger, DELAY, POKETWO_ID, OWNER_ID
+
+from main import DELAY, OWNER_ID, POKETWO_ID, logger
 
 
 class ShardsHandler(commands.Cog):

@@ -1,8 +1,10 @@
-import time
+import asyncio
 import random
+import time
 from discord.ext import commands
 from utilities.poke_identify import pokefier, solve, remove_diacritics
 from main import logger, POKETWO_ID, WHITELISTED_CHANNELS, LANGUAGES, DELAY
+from utilities.terminal_dashboard import terminal_dashboard
 
 
 class CatcherHandler(commands.Cog):
@@ -35,7 +37,17 @@ class CatcherHandler(commands.Cog):
                 )  # Get The Pokémon With Highest Score
 
                 name = predicted_pokemon[0]  # Get The Name Of The Pokémon
-                score = predicted_pokemon[1]  # Get The Score Of The Pokémon
+                score = float(predicted_pokemon[1])  # Get The Score Of The Pokémon
+                self.bot.last_spawn_prediction = {
+                    "name": name,
+                    "score": score,
+                    "channel_id": message.channel.id,
+                    "timestamp": time.time(),
+                }
+                if self.bot.terminal_dashboard_enabled:
+                    terminal_dashboard.info(
+                        f"Prediction: {name} ({score:.1f}%) in #{message.channel.id}"
+                    )
 
                 self.bot.blacklisted_pokemons = [
                     pokemon_name.lower()
@@ -54,14 +66,18 @@ class CatcherHandler(commands.Cog):
                     )
                     alt_name = remove_diacritics(alt_name)
 
-                    time.sleep(random.choice(DELAY))
+                    await asyncio.sleep(random.choice(DELAY))
                     await message.channel.send(f"<@716390085896962058> c {alt_name}")
                     logger.info(f"Predicted Pokémon : {name} With Score : {score}")
 
                 else:
                     logger.info(f"Predicted Pokémon : {name} With Score : {score}")
+                    if self.bot.terminal_dashboard_enabled:
+                        terminal_dashboard.warn(
+                            f"Low confidence prediction ({name}, {score:.1f}%), requesting hint"
+                        )
 
-                    time.sleep(random.choice(DELAY))
+                    await asyncio.sleep(random.choice(DELAY))
                     await message.channel.send("<@716390085896962058> h")
 
         if (

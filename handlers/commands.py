@@ -1,7 +1,9 @@
-import time
+import asyncio
 import random
+
 from discord.ext import commands
-from main import OWNER_ID, POKETWO_ID, DELAY
+
+from main import DELAY, OWNER_ID, POKETWO_ID
 
 
 class CommandsHandler(commands.Cog):
@@ -21,19 +23,19 @@ class CommandsHandler(commands.Cog):
 `trade` - To Request A Trade With A User
 `config` - To View The Current Configuration
 `solved` - To Confirm That The Captcha Was Solved
-        
+
 `channeladd` - To Add A Channel To The Whitelist
 `channelremove` - To Remove A Channel From The Whitelist
-        
+
 `blacklistadd` - To Add A Pokemon To The Blacklist
 `blacklistremove` - To Remove A Pokemon From The Blacklist
-        
+
 `languageadd` - To Add A Language To The Language List
 `languageremove` - To Remove A Language From The Language List
-        
+
         """
 
-        time.sleep(random.choice(DELAY))
+        await asyncio.sleep(random.choice(DELAY))
         await ctx.send(message)
 
     @commands.command()
