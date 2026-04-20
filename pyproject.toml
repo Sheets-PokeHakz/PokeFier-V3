@@ -10,6 +10,7 @@ dependencies = [
     "logging>=0.4.9.6",
     "numpy>=2.0.2",
     "python-dotenv>=1.0.1",
+    "rich>=13.9.4",
     "ruff>=0.8.6",
     "streamlit>=1.41.1",
     "tensorflow>=2.18.0",

@@ -1,12 +1,13 @@
-import json
-import time
-
 import asyncio
+import json
 import logging
-
-from discord.ext import commands
+import os
+import time
+from collections import deque
 
 import dotenv
+from discord.ext import commands
+from utilities.terminal_dashboard import terminal_dashboard
 
 dotenv.load_dotenv()
 
@@ -51,8 +52,16 @@ def read_config(filename="data/config.json"):
 config = read_config()
 logger.info("Initialized Config")
 
-# Defining The Bot Token
-TOKENS = ["List OF Tokens"]
+TOKENS = config.get("TOKENS", [])
+if not TOKENS:
+    env_tokens = os.getenv("TOKENS", "").strip()
+    if env_tokens:
+        TOKENS = [token.strip() for token in env_tokens.split(",") if token.strip()]
+
+if not TOKENS:
+    raise ValueError(
+        "No TOKENS configured. Add TOKENS in data/config.json or set TOKENS env var."
+    )
 
 # Defining The Config Variables
 DELAY = config["DELAY"]
@@ -62,10 +71,30 @@ OWNER_ID = config["OWNER_ID"]
 LANGUAGES = config["LANGUAGES"]
 POKETWO_ID = config["POKETWO_ID"]
 
-SPAM = config["SPAM"]["ENABLED"]
+def to_bool(value):
+    if isinstance(value, bool):
+        return value
+    if isinstance(value, str):
+        return value.strip().lower() in {"1", "true", "yes", "on"}
+    return bool(value)
+
+
+SPAM = to_bool(config["SPAM"]["ENABLED"])
 INTERVAL = config["SPAM"]["TIMING"]
 SPAM_ID = config["SPAM"]["SPAM_ID"]
 WEBHOOK_URL = config["WEBHOOK_URL"]
+DASHBOARD_CONFIG = config.get("DASHBOARD", {})
+DASHBOARD_ENABLED = to_bool(DASHBOARD_CONFIG.get("ENABLED", True))
+DASHBOARD_HOST = DASHBOARD_CONFIG.get("HOST", "127.0.0.1")
+DASHBOARD_PORT = int(DASHBOARD_CONFIG.get("PORT", 8080))
+TERMINAL_CONFIG = config.get("TERMINAL_DASHBOARD", {})
+TERMINAL_DASHBOARD_ENABLED = to_bool(TERMINAL_CONFIG.get("ENABLED", True))
+SAFETY_CONFIG = config.get("SAFETY", {})
+ACCOUNT_SPAM_COOLDOWN = float(SAFETY_CONFIG.get("ACCOUNT_SPAM_COOLDOWN", 1.5))
+GUILD_SPAM_COOLDOWN = float(SAFETY_CONFIG.get("GUILD_SPAM_COOLDOWN", 1.0))
+MIN_SPAM_INTERVAL = float(SAFETY_CONFIG.get("MIN_SPAM_INTERVAL", 3.6))
+MAX_CATCHES_24H = int(SAFETY_CONFIG.get("MAX_CATCHES_24H", 1000))
+CATCH_WARNING_THRESHOLD = int(SAFETY_CONFIG.get("CATCH_WARNING_THRESHOLD", 900))
 
 BLACKLISTED_POKEMONS = config["BLACKLISTED_POKEMONS"]
 WHITELISTED_CHANNELS = config["WHITELISTED_CHANNELS"]
@@ -75,14 +104,32 @@ WHITELISTED_CHANNELS = config["WHITELISTED_CHANNELS"]
 
 class Autocatcher(commands.Bot):
     def __init__(self):
-        super().__init__(command_prefix=None, self_bot=False)
+        super().__init__(command_prefix=None, self_bot=True)
 
         self.spam_id = SPAM_ID
         self.interval = INTERVAL
+        self.spam_enabled = SPAM
         self.languages = LANGUAGES
 
         self.whitelisted_channels = WHITELISTED_CHANNELS
         self.blacklisted_pokemons = BLACKLISTED_POKEMONS
+        self.dashboard_host = DASHBOARD_HOST
+        self.dashboard_port = DASHBOARD_PORT
+        self.started = None
+        self.verified = False
+        self.pokemons_caught = 0
+        self.last_spawn_prediction = None
+        self.last_caught = None
+        self.last_spam = None
+        self.last_spam_at = 0.0
+        self.next_spam_at = 0.0
+        self.account_spam_cooldown = ACCOUNT_SPAM_COOLDOWN
+        self.guild_spam_cooldown = GUILD_SPAM_COOLDOWN
+        self.min_spam_interval = MIN_SPAM_INTERVAL
+        self.max_catches_24h = MAX_CATCHES_24H
+        self.catch_warning_threshold = CATCH_WARNING_THRESHOLD
+        self.catch_timestamps = deque()
+        self.terminal_dashboard_enabled = TERMINAL_DASHBOARD_ENABLED
 
 
 # ========================================== MAIN FUNCTIONS ========================================== #
@@ -118,13 +165,36 @@ async def run_autocatcher(token):
         await bot.load_extension("handlers.trades")
         logger.info("+ Loaded Trades Handler")
 
+        if bot.spam_enabled:
+            await bot.load_extension("handlers.spam")
+            logger.info("+ Loaded Spam Handler")
+        else:
+            logger.info("+ Spam Handler Disabled In Config")
+
+        if DASHBOARD_ENABLED:
+            await bot.load_extension("handlers.dashboard")
+            logger.info(
+                f"+ Loaded Dashboard Handler (http://{bot.dashboard_host}:{bot.dashboard_port})"
+            )
+        else:
+            logger.info("+ Dashboard Disabled In Config")
+
         bot.started = time.time()  # Stats The Time
         bot.command_prefix = f"<@{bot.user.id}> "  # Set Command Prefix
 
         logger.info(f"+ Bot Prefix: {bot.command_prefix}")
 
         bot.verified = True  # Set Verified ( If False Bot Will Not Catch Pokemon)
-        bot.pokemons_caught = 0  # Set Global Pokemon Counter To 0
+
+        if bot.terminal_dashboard_enabled and bot.user:
+            terminal_dashboard.start(len(TOKENS))
+            terminal_dashboard.register_account(bot.user.id, str(bot.user))
+            terminal_dashboard.set_account_status(
+                bot.user.id,
+                connected=True,
+                verified=bot.verified,
+                spam_enabled=bot.spam_enabled,
+            )
 
     await bot.start(token)
 

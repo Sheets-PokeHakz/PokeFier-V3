@@ -3,14 +3,18 @@ import json
 import random
 import aiohttp
 import unicodedata
+from pathlib import Path
 import tensorflow as tf
 
-with open("data/pokemon", "r", encoding="utf8") as file:
+BASE_DIR = Path(__file__).resolve().parents[1]
+DATA_DIR = BASE_DIR / "data"
+
+with (DATA_DIR / "pokemon").open("r", encoding="utf8") as file:
     pokemon_list = file.read()
 
 
 def load_pokemon_data():
-    with open("data\pokemon_data.json", "r", encoding="utf-8") as f:
+    with (DATA_DIR / "pokemon_data.json").open("r", encoding="utf-8") as f:
         return json.load(f)
 
 
@@ -33,7 +37,8 @@ def remove_diacritics(input_str):
 class pokefier:
     def __init__(self):
         self.pokemon_data = load_pokemon_data()
-        self.labels = eval(open("data/names.txt", "r").read())
+        with (DATA_DIR / "names.txt").open("r", encoding="utf-8") as file:
+            self.labels = eval(file.read())
         self.interpreter_pool = [self._initialize_interpreter() for _ in range(5)]
 
     def _remove_alpha_channel(self, image):
@@ -70,8 +75,7 @@ class pokefier:
         return predicted_pokemon
 
     def _initialize_interpreter(self):
-        tflite_model_path = "data/pokefire.tflite"
-        interpreter = tf.lite.Interpreter(model_path=tflite_model_path)
+        interpreter = tf.lite.Interpreter(model_path=str(DATA_DIR / "pokefire.tflite"))
         interpreter.allocate_tensors()
         return interpreter
 
