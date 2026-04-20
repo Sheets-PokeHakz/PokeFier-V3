@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Pokefier Terminal Dashboard</title>
+  <link rel="stylesheet" href="/static/styles.css" />
+</head>
+<body>
+  <div class="shell">
+    <div class="topbar">
+      <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+      <div class="title">pokefier://terminal-dashboard (single-page)</div>
+    </div>
+    <section class="dashboard-grid">
+      <div class="card" id="statsPanel"><h3>Stats</h3><div class="panel-content">Loading...</div></div>
+      <div class="card" id="logsPanel"><h3>Logs</h3><div class="panel-content">Loading...</div></div>
+      <div class="card" id="captchaPanel"><h3>Captchas</h3><div class="panel-content">Loading...</div></div>
+      <div class="card" id="pokemonsPanel"><h3>Pokemons</h3><div class="panel-content">Loading...</div></div>
+      <div class="card" id="accountsPanel"><h3>Crusers</h3><div class="panel-content">Loading...</div></div>
+      <div class="card" id="autocatcherPanel"><h3>AutoCatcher</h3><div class="panel-content">Loading...</div></div>
+      <div class="card shortcuts-panel">
+        <h3>Shortcuts</h3>
+        <div class="panel-content">
+          <span class="k">q</span> quit terminal tui
+          <span class="k">p</span> pause spam
+          <span class="k">r</span> resume spam
+          <span class="k">s</span> mark captcha solved
+        </div>
+      </div>
+    </section>
+    <section class="config-editor card">
+      <h3>GUI Config Editor (Full config.json)</h3>
+      <div class="editor-actions">
+        <button id="reloadConfigBtn">Reload</button>
+        <button id="formatConfigBtn">Format JSON</button>
+        <button id="saveConfigBtn">Save Config</button>
+      </div>
+      <textarea id="rawConfigInput" spellcheck="false"></textarea>
+      <div class="status-line" id="configStatus">Ready</div>
+    </section>
+  </div>
+  <script src="/static/app.js"></script>
+</body>
+</html>
