@@ -52,15 +52,34 @@ def read_config(filename="data/config.json"):
 config = read_config()
 logger.info("Initialized Config")
 
-TOKENS = config.get("TOKENS", [])
+
+def normalize_tokens(raw_tokens):
+    if raw_tokens is None:
+        return []
+
+    if isinstance(raw_tokens, str):
+        token_sources = raw_tokens.split(",")
+    elif isinstance(raw_tokens, list):
+        token_sources = []
+        for token in raw_tokens:
+            if isinstance(token, str):
+                token_sources.extend(token.split(","))
+            elif token is not None:
+                token_sources.append(str(token))
+    else:
+        token_sources = [str(raw_tokens)]
+
+    return [token.strip() for token in token_sources if token.strip()]
+
+
+TOKENS = normalize_tokens(config.get("TOKENS"))
 if not TOKENS:
-    env_tokens = os.getenv("TOKENS", "").strip()
-    if env_tokens:
-        TOKENS = [token.strip() for token in env_tokens.split(",") if token.strip()]
+    TOKENS = normalize_tokens(os.getenv("TOKENS"))
 
 if not TOKENS:
     raise ValueError(
-        "No TOKENS configured. Add TOKENS in data/config.json or set TOKENS env var."
+        "No valid TOKENS configured. Add non-empty TOKENS in data/config.json "
+        "or set TOKENS as a comma-separated env var."
     )
 
 # Defining The Config Variables
@@ -103,9 +122,10 @@ WHITELISTED_CHANNELS = config["WHITELISTED_CHANNELS"]
 
 
 class Autocatcher(commands.Bot):
-    def __init__(self):
+    def __init__(self, account_index=0, dashboard_enabled=False):
         super().__init__(command_prefix=None, self_bot=True)
 
+        self.account_index = account_index
         self.spam_id = SPAM_ID
         self.interval = INTERVAL
         self.spam_enabled = SPAM
@@ -130,13 +150,17 @@ class Autocatcher(commands.Bot):
         self.catch_warning_threshold = CATCH_WARNING_THRESHOLD
         self.catch_timestamps = deque()
         self.terminal_dashboard_enabled = TERMINAL_DASHBOARD_ENABLED
+        self.dashboard_enabled = dashboard_enabled
 
 
 # ========================================== MAIN FUNCTIONS ========================================== #
 
 
-async def run_autocatcher(token):
-    bot = Autocatcher()  # Initialize Bot
+async def run_autocatcher(token, account_index=0):
+    bot = Autocatcher(
+        account_index=account_index,
+        dashboard_enabled=DASHBOARD_ENABLED and account_index == 0,
+    )  # Initialize Bot
 
     bot.remove_command("help")  # Remove Default Help Command
 
@@ -171,11 +195,13 @@ async def run_autocatcher(token):
         else:
             logger.info("+ Spam Handler Disabled In Config")
 
-        if DASHBOARD_ENABLED:
+        if bot.dashboard_enabled:
             await bot.load_extension("handlers.dashboard")
             logger.info(
                 f"+ Loaded Dashboard Handler (http://{bot.dashboard_host}:{bot.dashboard_port})"
             )
+        elif DASHBOARD_ENABLED:
+            logger.info("+ Dashboard Handler Skipped For Secondary Account")
         else:
             logger.info("+ Dashboard Disabled In Config")
 
@@ -206,7 +232,7 @@ async def stop_autocatcher():
 
 
 async def main(tokens):
-    ac_tasks = [run_autocatcher(token) for token in tokens]
+    ac_tasks = [run_autocatcher(token, index) for index, token in enumerate(tokens)]
     await asyncio.gather(*ac_tasks)
 
 
