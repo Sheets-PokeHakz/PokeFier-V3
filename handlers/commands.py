@@ -17,6 +17,7 @@ class CommandsHandler(commands.Cog):
 `shard` - To Buy Shards
 `help` - To View This Message
 `incense` - To Start The Incense
+`incensemode` - Toggle Incense Mode (Stops Spam, Only Catches)
 
 `say` - To Make The Bot Say Something
 `ping ` - To Check If The Bot Is Online
@@ -55,6 +56,29 @@ class CommandsHandler(commands.Cog):
             )
             await ctx.send("Time : 30m, 1h, 3h, 1d")
             await ctx.send("Interval : 10s, 20s, 30s")
+
+    @commands.command()
+    async def incensemode(self, ctx, mode: str = None):
+        if ctx.author.id != OWNER_ID:
+            return
+
+        if mode is None:
+            status = "ON" if self.bot.incense_mode else "OFF"
+            await ctx.reply(f"**Incense Mode:** `{status}`")
+            return
+
+        mode = mode.lower()
+        if mode in ["on", "true", "1", "yes"]:
+            self.bot.incense_mode = True
+            was_spam_enabled = self.bot.spam_enabled
+            self.bot.spam_enabled = False
+            await ctx.reply(f"**Incense Mode Enabled.** Spam was `{'ON' if was_spam_enabled else 'OFF'}`, now disabled. Bot will only catch during incense.")
+        elif mode in ["off", "false", "0", "no"]:
+            self.bot.incense_mode = False
+            self.bot.spam_enabled = True
+            await ctx.reply("**Incense Mode Disabled.** Spam re-enabled. Bot will now catch and spam normally.")
+        else:
+            await ctx.reply("**Invalid option.** Use `on` or `off`.")
 
     @commands.command()
     async def channeladd(self, ctx, *channel_ids):
@@ -227,10 +251,9 @@ class CommandsHandler(commands.Cog):
 
     @commands.command()
     async def say(self, ctx, *, message):
-        if ctx.message.author.id != OWNER_ID:
+        if ctx.author.id != OWNER_ID:
             return
-        else:
-            await ctx.send(message)
+        await ctx.send(message)
 
 
 async def setup(bot):

@@ -129,6 +129,7 @@ class Autocatcher(commands.Bot):
         self.spam_id = SPAM_ID
         self.interval = INTERVAL
         self.spam_enabled = SPAM
+        self.incense_mode = False
         self.languages = LANGUAGES
 
         self.whitelisted_channels = WHITELISTED_CHANNELS
