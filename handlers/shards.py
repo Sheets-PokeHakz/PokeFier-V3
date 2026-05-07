@@ -12,7 +12,7 @@ class ShardsHandler(commands.Cog):
 
     @commands.command()
     async def shard(self, ctx, amt: int):
-        if ctx.author.id == OWNER_ID:
+        if ctx.author.id in OWNER_ID:
             if amt > 0:
                 await ctx.send(f"<@{POKETWO_ID}> buy shards {amt}")
         else:

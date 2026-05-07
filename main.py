@@ -90,6 +90,7 @@ OWNER_ID = config["OWNER_ID"]
 LANGUAGES = config["LANGUAGES"]
 POKETWO_ID = config["POKETWO_ID"]
 
+
 def to_bool(value):
     if isinstance(value, bool):
         return value
@@ -123,7 +124,7 @@ WHITELISTED_CHANNELS = config["WHITELISTED_CHANNELS"]
 
 class Autocatcher(commands.Bot):
     def __init__(self, account_index=0, dashboard_enabled=False):
-        super().__init__(command_prefix=None, self_bot=True)
+        super().__init__(command_prefix=None, self_bot=False)
 
         self.account_index = account_index
         self.spam_id = SPAM_ID
@@ -144,6 +145,7 @@ class Autocatcher(commands.Bot):
         self.last_spam = None
         self.last_spam_at = 0.0
         self.next_spam_at = 0.0
+        self.pokecoins = 0
         self.account_spam_cooldown = ACCOUNT_SPAM_COOLDOWN
         self.guild_spam_cooldown = GUILD_SPAM_COOLDOWN
         self.min_spam_interval = MIN_SPAM_INTERVAL
