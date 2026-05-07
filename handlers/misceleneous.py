@@ -141,11 +141,12 @@ class MisceleneousHandler(commands.Cog):
                 self.bot.spam_enabled = False
                 await message.channel.send("<@716390085896962058> incense pause")
 
-                owner_dm = self.bot.get_user(OWNER_ID)
-                if owner_dm:
-                    await owner_dm.send(
-                        f"Safety pause enabled.\n24h catches: {catches_last_24h}/{self.bot.max_catches_24h}"
-                    )
+                for owner_id in OWNER_ID:
+                    owner_dm = self.bot.get_user(owner_id)
+                    if owner_dm:
+                        await owner_dm.send(
+                            f"Safety pause enabled.\n24h catches: {catches_last_24h}/{self.bot.max_catches_24h}"
+                        )
                 return
 
             if catches_last_24h >= self.bot.catch_warning_threshold:
@@ -185,10 +186,12 @@ class MisceleneousHandler(commands.Cog):
                     self.bot.user.id, captcha=True, verified=False
                 )
 
-            owner_dm = self.bot.get_user(OWNER_ID)
-            await owner_dm.send(
-                f"Captcha Challenge Received. Please Solve It.\n\n{message.content}"
-            )
+            for owner_id in OWNER_ID:
+                owner_dm = self.bot.get_user(owner_id)
+                if owner_dm:
+                    await owner_dm.send(
+                        f"Captcha Challenge Received. Please Solve It.\n\n{message.content}"
+                    )
             logger.info("Captcha Challenge Sent To Owner")
 
 
