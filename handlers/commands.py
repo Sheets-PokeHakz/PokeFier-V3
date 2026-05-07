@@ -16,14 +16,17 @@ class CommandsHandler(commands.Cog):
         **Commands**
 `shard` - To Buy Shards
 `help` - To View This Message
-`incense` - To Start The Incense
-`incensemode` - Toggle Incense Mode (Stops Spam, Only Catches)
+`incensemode <on/off>` - Toggle Incense Mode (Stops Spam, Only Catches)
 
 `say` - To Make The Bot Say Something
 `ping ` - To Check If The Bot Is Online
-`trade` - To Request A Trade With A User
 `config` - To View The Current Configuration
 `solved` - To Confirm That The Captcha Was Solved
+
+`confirm` - To Confirm A Trade
+`bal` - To Check Balance Of Account
+`trade` - To Request A Trade With A User
+`add` - To Add A Pokemon / Pokecoins To Trade ( all, bal, poke )
 
 `channeladd` - To Add A Channel To The Whitelist
 `channelremove` - To Remove A Channel From The Whitelist
@@ -46,7 +49,7 @@ class CommandsHandler(commands.Cog):
 
     @commands.command()
     async def incense(self, ctx, time: str, inter: str):
-        if ctx.author.id != OWNER_ID:
+        if ctx.author.id not in OWNER_ID:
             if time in ["30m", "1h", "3h", "1d"] and inter in ["10s", "20s", "30s"]:
                 await ctx.send(f"<@{POKETWO_ID}> incense buy {time} {inter} -y")
 
@@ -59,7 +62,7 @@ class CommandsHandler(commands.Cog):
 
     @commands.command()
     async def incensemode(self, ctx, mode: str = None):
-        if ctx.author.id != OWNER_ID:
+        if ctx.author.id not in OWNER_ID:
             return
 
         if mode is None:
@@ -72,11 +75,15 @@ class CommandsHandler(commands.Cog):
             self.bot.incense_mode = True
             was_spam_enabled = self.bot.spam_enabled
             self.bot.spam_enabled = False
-            await ctx.reply(f"**Incense Mode Enabled.** Spam was `{'ON' if was_spam_enabled else 'OFF'}`, now disabled. Bot will only catch during incense.")
+            await ctx.reply(
+                f"**Incense Mode Enabled.** Spam was `{'ON' if was_spam_enabled else 'OFF'}`, now disabled. Bot will only catch during incense."
+            )
         elif mode in ["off", "false", "0", "no"]:
             self.bot.incense_mode = False
             self.bot.spam_enabled = True
-            await ctx.reply("**Incense Mode Disabled.** Spam re-enabled. Bot will now catch and spam normally.")
+            await ctx.reply(
+                "**Incense Mode Disabled.** Spam re-enabled. Bot will now catch and spam normally."
+            )
         else:
             await ctx.reply("**Invalid option.** Use `on` or `off`.")
 
@@ -251,7 +258,7 @@ class CommandsHandler(commands.Cog):
 
     @commands.command()
     async def say(self, ctx, *, message):
-        if ctx.author.id != OWNER_ID:
+        if ctx.author.id not in OWNER_ID:
             return
         await ctx.send(message)
 
